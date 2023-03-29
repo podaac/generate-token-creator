@@ -20,17 +20,25 @@ from requests.auth import HTTPBasicAuth
 
 # Constants
 HEADERS = {"Accept": "application/json"}
-TOKEN_URL = "https://urs.earthdata.nasa.gov/api/users/token"
-DELETE_TOKEN_URL = "https://urs.earthdata.nasa.gov/api/users/revoke_token?token"
 TOPIC_STRING = "batch-job-failure"
 
 def token_handler(event, context):
     """Handles the creation of a EDL bearer token."""
     
     logger = get_logger()
+    
+    if event["prefix"].endswith("-sit") or event["prefix"].endswith("-uat"):
+        token_url = "https://uat.urs.earthdata.nasa.gov/api/users/token"
+        delete_token_url = "https://uat.urs.earthdata.nasa.gov/api/users/revoke_token?token"
+        logger.info("Attempting to create token for UAT environment.")
+    else:
+        token_url = "https://urs.earthdata.nasa.gov/api/users/token"
+        delete_token_url = "https://urs.earthdata.nasa.gov/api/users/revoke_token?token"
+        logger.info("Attempting to create token for OPS environment.")
+    
     try:
         username, password = get_edl_creds(logger)
-        token = generate_token(username, password, logger)
+        token = generate_token(username, password, token_url, delete_token_url, logger)
         store_token(token, event["prefix"], logger)
         if not token:
             publish_event("ERROR", "Issue generating and storing bearer token.", "", logger)
@@ -81,14 +89,14 @@ def get_edl_creds(logger):
         logger.error(error)
         raise error
     
-def generate_token(username, password, logger):
+def generate_token(username, password, token_url, delete_token_url, logger):
     """Generate and store bearer token using EDL credentials in SSM Parameter Store."""
     
-    post_response = requests.post(TOKEN_URL, headers=HEADERS, auth=HTTPBasicAuth(username, password))
+    post_response = requests.post(token_url, headers=HEADERS, auth=HTTPBasicAuth(username, password))
     token_data = json.loads(post_response.content)
     if "error" in token_data.keys(): 
         if token_data["error"] == "max_token_limit": 
-            token = handle_token_error(token_data, username, password, logger)
+            token = handle_token_error(token_data, username, password, token_url, delete_token_url, logger)
         else:
             logger.error("Error encountered when trying to retrieve bearer token from EDL.")
             return False
@@ -97,19 +105,19 @@ def generate_token(username, password, logger):
     logger.info("Successfully generated EDL bearer token.")
     return token
     
-def handle_token_error(token_data, username, password, logger):
+def handle_token_error(token_data, username, password, token_url, delete_token_url,  logger):
     """Attempts to handle errors encoutered in token generation and return a
     valid bearer token."""
     
     # Get all tokens and attempt to remove any that exist
-    get_response = requests.get(f"{TOKEN_URL}s", headers=HEADERS, auth=HTTPBasicAuth(username, password))
+    get_response = requests.get(f"{token_url}s", headers=HEADERS, auth=HTTPBasicAuth(username, password))
     token_data = json.loads(get_response.content)
     for token in token_data:
         if "access_token" in token.keys():
-            requests.post(f"{DELETE_TOKEN_URL}={token['access_token']}", headers=HEADERS, auth=HTTPBasicAuth(username, password))
+            requests.post(f"{delete_token_url}={token['access_token']}", headers=HEADERS, auth=HTTPBasicAuth(username, password))
     
     # Generate a new token
-    post_response = requests.post(TOKEN_URL, headers=HEADERS, auth=HTTPBasicAuth(username, password))
+    post_response = requests.post(token_url, headers=HEADERS, auth=HTTPBasicAuth(username, password))
     token_data = json.loads(post_response.content)
     if "error" in token_data.keys():
         logger.error("Error encountered when trying to retrieve bearer token from EDL.")
