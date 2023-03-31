@@ -1,6 +1,6 @@
 # token_creator
 
-The token_creator program is an AWS Lambda function that periodically creates or renews the ELD bearer token required to preform CMR queries.
+The token_creator program is an AWS Lambda function that periodically creates or renews the EDL bearer token required to preform CMR queries.
 
 token_creator removes old tokens and creates a new token to store as a secure string in the SSM parameter store. Other Generate components may access this token to perform CMR queries.
 
