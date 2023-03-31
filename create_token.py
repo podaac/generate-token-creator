@@ -110,7 +110,7 @@ def handle_token_error(token_data, username, password, token_url, delete_token_u
     valid bearer token."""
     
     # Get all tokens and attempt to remove any that exist
-    get_response = requests.get(f"{token_url}s", headers=HEADERS, auth=HTTPBasicAuth(username, password))
+    get_response = requests.post(f"{token_url}s", headers=HEADERS, auth=HTTPBasicAuth(username, password))
     token_data = json.loads(get_response.content)
     for token in token_data:
         if "access_token" in token.keys():
