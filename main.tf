@@ -19,7 +19,6 @@ provider "aws" {
     key_prefixes = ["gsfc-ngap"]
   }
   region  = var.aws_region
-  profile = var.profile
 }
 
 # Data sources

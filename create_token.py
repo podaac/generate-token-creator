@@ -93,7 +93,7 @@ def generate_token(username, password, token_url, delete_token_url, logger):
     """Generate and store bearer token using EDL credentials in SSM Parameter Store."""
     
     post_response = requests.post(token_url, headers=HEADERS, auth=HTTPBasicAuth(username, password))
-    token_data = json.loads(post_response.content)
+    token_data = post_response.json()
     if "error" in token_data.keys(): 
         if token_data["error"] == "max_token_limit": 
             token = handle_token_error(token_data, username, password, token_url, delete_token_url, logger)
@@ -110,15 +110,15 @@ def handle_token_error(token_data, username, password, token_url, delete_token_u
     valid bearer token."""
     
     # Get all tokens and attempt to remove any that exist
-    get_response = requests.post(f"{token_url}s", headers=HEADERS, auth=HTTPBasicAuth(username, password))
-    token_data = json.loads(get_response.content)
+    post_get = requests.get(f"{token_url}s", headers=HEADERS, auth=HTTPBasicAuth(username, password))
+    token_data = post_get.json()
     for token in token_data:
         if "access_token" in token.keys():
             requests.post(f"{delete_token_url}={token['access_token']}", headers=HEADERS, auth=HTTPBasicAuth(username, password))
     
     # Generate a new token
     post_response = requests.post(token_url, headers=HEADERS, auth=HTTPBasicAuth(username, password))
-    token_data = json.loads(post_response.content)
+    token_data = post_response.json()
     if "error" in token_data.keys():
         logger.error("Error encountered when trying to retrieve bearer token from EDL.")
         return False
