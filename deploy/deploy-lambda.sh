@@ -11,7 +11,7 @@ APP_NAME=$1
 ROOT_PATH="$PWD"
 
 # Install dependencies
-pip install --target ./package urllib3==1.26.15 requests
+pip install --target ./package requests~=2.29.0 
 
 # Zip dependencies
 cd package/
