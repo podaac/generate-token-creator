@@ -87,7 +87,7 @@ resource "aws_iam_policy" "aws_lambda_execution_policy" {
         "Action" : [
           "ssm:PutParameter*"
         ],
-        "Resource" : "${aws_ssm_parameter.aws_ssm_parameter_edl_token.arn}"
+        "Resource" : "${data.aws_ssm_parameter.edl_token.arn}"
       },
       {
         "Sid" : "EncryptDecryptKey",
@@ -101,15 +101,6 @@ resource "aws_iam_policy" "aws_lambda_execution_policy" {
       }
     ]
   })
-}
-
-# EDL token SSM parameter
-resource "aws_ssm_parameter" "aws_ssm_parameter_edl_token" {
-  name        = "${var.prefix}-edl-token"
-  description = "Temporary EDL bearer token"
-  type        = "SecureString"
-  value       = "start"
-  overwrite   = true
 }
 
 # EventBridge schedule

@@ -32,6 +32,10 @@ data "aws_sns_topic" "batch_failure_topic" {
   name = "${var.prefix}-batch-job-failure"
 }
 
+data "aws_ssm_parameter" "edl_token" {
+  name = "${var.prefix}-edl-token"
+}
+
 data "aws_ssm_parameter" "edl_username" {
   name = "generate-edl-username"
 }
