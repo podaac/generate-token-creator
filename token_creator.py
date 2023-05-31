@@ -82,7 +82,7 @@ def get_edl_creds(logger):
         ssm_client = boto3.client('ssm', region_name="us-west-2")
         username = ssm_client.get_parameter(Name="generate-edl-username", WithDecryption=True)["Parameter"]["Value"]
         password = ssm_client.get_parameter(Name="generate-edl-password", WithDecryption=True)["Parameter"]["Value"]
-        logger.info("Retrieved EDL username and password from SSM Parameter Store.")
+        logger.info(f"Retrieved EDL credentials for EDL user: {username} from SSM Parameter Store.")
         return username, password
     except botocore.exceptions.ClientError as error:
         logger.error("Could not retrieve EDL credentials from SSM Parameter Store.")
