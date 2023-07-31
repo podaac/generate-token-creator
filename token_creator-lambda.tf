@@ -87,7 +87,7 @@ resource "aws_iam_policy" "aws_lambda_execution_policy" {
         "Action" : [
           "ssm:PutParameter*"
         ],
-        "Resource" : "${data.aws_ssm_parameter.edl_token.arn}"
+        "Resource" : "${aws_ssm_parameter.aws_ssm_parameter_edl_token.arn}"
       },
       {
         "Sid" : "EncryptDecryptKey",
