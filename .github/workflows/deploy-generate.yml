@@ -52,6 +52,40 @@ jobs:
       # Check out GitHub repo
       - uses: actions/checkout@v3
 
+      # SNYK IAC scan and report
+      - name: Run Snyk IAC to test and report
+        uses: snyk/actions/iac@master
+        env:
+            SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: test
+          args: >
+              --org=${{ secrets.SNYK_ORG_ID }}
+              --severity-threshold=high
+              --report
+
+      # SNYK Python
+      - name: Run Snyk Python to test
+        uses: snyk/actions/python-3.8@master
+        env:
+            SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: test
+          args: >
+              --org=${{ secrets.SNYK_ORG_ID }}
+              --project-name=${{ github.repository }}
+              --severity-threshold=high
+              --fail-on=all
+      - name: Run Snyk Python to report
+        uses: snyk/actions/python-3.8@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: monitor
+          args: >
+            --org=${{ secrets.SNYK_ORG_ID }}
+            --project-name=${{ github.repository }}
+
       # Create Lambda zip deployment
       - name: Create Lambda Zip Package
         run: deploy/deploy-lambda.sh ${SCRIPT_NAME_ENV}
@@ -65,8 +99,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id: ${{ secrets[format('AWS_ACCESS_KEY_ID_SERVICES_{0}', env.TARGET_ENV)] }}
-          aws-secret-access-key: ${{ secrets[format('AWS_SECRET_ACCESS_KEY_SERVICES_{0}', env.TARGET_ENV)] }}
+          aws-access-key-id: ${{ secrets[format('AWS_ACCESS_KEY_ID_{0}', env.TARGET_ENV)] }}
+          aws-secret-access-key: ${{ secrets[format('AWS_SECRET_ACCESS_KEY_{0}', env.TARGET_ENV)] }}
           aws-region: us-west-2
 
       # Set up Terraform
