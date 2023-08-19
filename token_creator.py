@@ -63,7 +63,7 @@ def get_logger():
     console_handler = logging.StreamHandler()
 
     # Create a formatter and add it to the handler
-    console_format = logging.Formatter("%(asctime)s - %(module)s - %(levelname)s : %(message)s")
+    console_format = logging.Formatter("%(module)s - %(levelname)s : %(message)s")
     console_handler.setFormatter(console_format)
 
     # Add handlers to logger
@@ -82,7 +82,7 @@ def get_edl_creds(logger):
         ssm_client = boto3.client('ssm', region_name="us-west-2")
         username = ssm_client.get_parameter(Name="generate-edl-username", WithDecryption=True)["Parameter"]["Value"]
         password = ssm_client.get_parameter(Name="generate-edl-password", WithDecryption=True)["Parameter"]["Value"]
-        logger.info("Retrieved EDL username and password.")
+        logger.info(f"Retrieved EDL credentials for EDL user: {username} from SSM Parameter Store.")
         return username, password
     except botocore.exceptions.ClientError as error:
         logger.error("Could not retrieve EDL credentials from SSM Parameter Store.")

@@ -1,11 +1,11 @@
 # AWS Lambda function
 resource "aws_lambda_function" "aws_lambda_token_creator" {
-  filename         = "create_token.zip"
+  filename         = "token_creator.zip"
   function_name    = "${var.prefix}-token-creator"
   role             = aws_iam_role.aws_lambda_execution_role.arn
-  handler          = "create_token.token_handler"
+  handler          = "token_creator.token_handler"
   runtime          = "python3.9"
-  source_code_hash = filebase64sha256("create_token.zip")
+  source_code_hash = filebase64sha256("token_creator.zip")
   timeout          = 300
 }
 
@@ -103,7 +103,7 @@ resource "aws_iam_policy" "aws_lambda_execution_policy" {
   })
 }
 
-# EDL token SSM parameter
+# SSM Parameter Store parameter to EDL bearer token
 resource "aws_ssm_parameter" "aws_ssm_parameter_edl_token" {
   name        = "${var.prefix}-edl-token"
   description = "Temporary EDL bearer token"
