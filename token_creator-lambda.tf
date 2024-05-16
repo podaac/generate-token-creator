@@ -4,7 +4,7 @@ resource "aws_lambda_function" "aws_lambda_token_creator" {
   function_name    = "${var.prefix}-token-creator"
   role             = aws_iam_role.aws_lambda_execution_role.arn
   handler          = "token_creator.token_handler"
-  runtime          = "python3.9"
+  runtime          = "python3.12"
   source_code_hash = filebase64sha256("token_creator.zip")
   timeout          = 300
 }
